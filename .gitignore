@@ -1,0 +1,39 @@
+# Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+.venv-chatterbox/
+.venv-kokoro/
+.venv-tts/
+venv/
+env/
+
+# Generated TTS audio
+tts/generated/
+*.wav
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.*

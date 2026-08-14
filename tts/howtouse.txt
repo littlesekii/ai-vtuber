@@ -1,0 +1,5 @@
+run the following
+
+.venv-kokoro\Scripts\activate
+
+python -m uvicorn tts.kokoro_server:app --host 127.0.0.1 --port 8003
