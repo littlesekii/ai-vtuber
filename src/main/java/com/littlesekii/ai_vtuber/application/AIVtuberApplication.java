@@ -5,15 +5,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.littlesekii.ai_vtuber.audio.AudioPlayerService;
-import com.littlesekii.ai_vtuber.avatar.VnyanAvatarController;
+import com.littlesekii.ai_vtuber.avatar.VNyanAvatarController;
+import com.littlesekii.ai_vtuber.avatar.VNyanWebSocketClient;
 import com.littlesekii.ai_vtuber.core.ai.AIProvider;
 import com.littlesekii.ai_vtuber.core.ai.AIService;
 import com.littlesekii.ai_vtuber.core.ai.OllamaAIProvider;
-import com.littlesekii.ai_vtuber.core.chat.ChatService;
+import com.littlesekii.ai_vtuber.core.interaction.InteractionService;
 import com.littlesekii.ai_vtuber.core.personality.PersonalityService;
+import com.littlesekii.ai_vtuber.core.priority.PriorityService;
 import com.littlesekii.ai_vtuber.pipeline.AIWorker;
 import com.littlesekii.ai_vtuber.pipeline.AudioPlayerWorker;
-import com.littlesekii.ai_vtuber.pipeline.ChatWorker;
+import com.littlesekii.ai_vtuber.pipeline.InteractionWorker;
 import com.littlesekii.ai_vtuber.pipeline.ProcessingPipeline;
 import com.littlesekii.ai_vtuber.pipeline.TTSWorker;
 import com.littlesekii.ai_vtuber.tts.HttpTTSProvider;
@@ -22,7 +24,11 @@ import com.littlesekii.ai_vtuber.tts.TTSService;
 
 public class AIVtuberApplication {
 
-    private final ChatService chatService;
+    private final VNyanWebSocketClient vnyanWSClient;
+    private final VNyanAvatarController vnyanAvatar;
+
+    private final PriorityService priorityService;
+    private final InteractionService interactionService;
     private final TTSService ttsService;
     private final AIService aiService;
     private final AudioPlayerService audioPlayerService;
@@ -31,8 +37,17 @@ public class AIVtuberApplication {
     private final ExecutorService executor;
 
     public AIVtuberApplication() {
-        chatService = new ConsoleChatService();
-        // chatService = new TiktokChatService("gostosinhado_");
+
+        vnyanWSClient = new VNyanWebSocketClient();
+        vnyanAvatar = new VNyanAvatarController(vnyanWSClient);
+
+        priorityService = new PriorityService();
+
+        interactionService = new ConsoleInteractionService();
+        // interactionService = new TiktokInteractionService(
+        //     "gostosinhado_", 
+        //     priorityService
+        // );
         
         TTSProvider ttsProvider = new HttpTTSProvider();
         ttsService = new TTSService(ttsProvider);
@@ -43,20 +58,19 @@ public class AIVtuberApplication {
         );
         aiService = new AIService(aiProvider, personalityService);
         
-        audioPlayerService = new AudioPlayerService(new VnyanAvatarController());
+        audioPlayerService = new AudioPlayerService(vnyanAvatar);
         
         pipeline = new ProcessingPipeline();
         executor = Executors.newFixedThreadPool(4);
-
     }
 
     public void start() {
-        executor.submit(new ChatWorker(
-            pipeline.getMessageQueue(), 
-            chatService
+        executor.submit(new InteractionWorker(
+            pipeline.getInteractionQueue(), 
+            interactionService
         ));
         executor.submit(new AIWorker(
-            pipeline.getMessageQueue(), 
+            pipeline.getInteractionQueue(), 
             pipeline.getResponseQueue(), 
             aiService
         ));

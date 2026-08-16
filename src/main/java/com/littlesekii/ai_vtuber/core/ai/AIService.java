@@ -1,6 +1,7 @@
 package com.littlesekii.ai_vtuber.core.ai;
 
-import com.littlesekii.ai_vtuber.core.chat.ChatMessage;
+import com.littlesekii.ai_vtuber.core.interaction.InteractionEvent;
+import com.littlesekii.ai_vtuber.core.interaction.InteractionType;
 import com.littlesekii.ai_vtuber.core.personality.PersonalityService;
 
 public class AIService {
@@ -15,17 +16,27 @@ public class AIService {
         this.personalityService = personalityService;
     }
 
-    public AIResponse process(ChatMessage message) {
+    public AIResponse process(InteractionEvent interaction) {
         System.out.println("[AI] Generating response...");
-        String response = provider.generateResponse(
-            personalityService.getPersonality(),
-            message.username(),
-            message.message()
-        );
+        String response = "";
+
+        if (interaction.type() == InteractionType.MESSAGE) {
+            response = provider.generateMessageResponse(
+                personalityService.getPersonality(),
+                interaction.username(),
+                interaction.body()
+            );
+        } else {
+            response = provider.generateEventResponse(
+                personalityService.getPersonality(),
+                interaction.username(),
+                interaction.body()
+            );
+        }
         System.out.println("[AI] Generated response: " + response);
 
         AIResponse aiResponse = new AIResponse(
-            message.username(),
+            interaction.username(),
             response
         );
 

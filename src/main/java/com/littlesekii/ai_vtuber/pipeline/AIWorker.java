@@ -4,16 +4,16 @@ import java.util.concurrent.BlockingQueue;
 
 import com.littlesekii.ai_vtuber.core.ai.AIResponse;
 import com.littlesekii.ai_vtuber.core.ai.AIService;
-import com.littlesekii.ai_vtuber.core.chat.ChatMessage;
+import com.littlesekii.ai_vtuber.core.interaction.InteractionEvent;
 
 public class AIWorker implements Runnable {
 
-    private final BlockingQueue<ChatMessage> input;
+    private final BlockingQueue<InteractionEvent> input;
     private final BlockingQueue<AIResponse> output;
     private final AIService aiService;
 
     public AIWorker(
-        BlockingQueue<ChatMessage> input,
+        BlockingQueue<InteractionEvent> input,
         BlockingQueue<AIResponse> output,
         AIService aiService
     ) {
@@ -26,8 +26,8 @@ public class AIWorker implements Runnable {
     public void run() { 
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                ChatMessage message = input.take();
-                AIResponse response = aiService.process(message);
+                InteractionEvent interactionEvent = input.take();
+                AIResponse response = aiService.process(interactionEvent);
                 output.offer(response);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

@@ -1,13 +1,11 @@
 package com.littlesekii.ai_vtuber.avatar;
 
-public class VnyanAvatarController {
+public class VNyanAvatarController {
 
-    private final VnyanWebSocketClient client;
+    private final VNyanWebSocketClient client;
 
-    public VnyanAvatarController() {
-        this.client = new VnyanWebSocketClient(
-            "ws://127.0.0.1:8067/vnyan"
-        );
+    public VNyanAvatarController(VNyanWebSocketClient client) {
+        this.client = client;
     }
 
     public void openMouth() {
@@ -16,6 +14,10 @@ public class VnyanAvatarController {
 
     public void closeMouth() {
         client.send("MouthClose");
+    }
+
+    public void gift(int amount) {
+        client.send("Gift " + amount);
     }
 
     public void close() {

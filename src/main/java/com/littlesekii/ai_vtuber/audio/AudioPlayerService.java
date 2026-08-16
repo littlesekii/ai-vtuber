@@ -9,14 +9,14 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineEvent;
 
-import com.littlesekii.ai_vtuber.avatar.VnyanAvatarController;
+import com.littlesekii.ai_vtuber.avatar.VNyanAvatarController;
 import com.littlesekii.ai_vtuber.tts.GeneratedAudio;
 
 public class AudioPlayerService {
 
-    private final VnyanAvatarController avatar;
+    private final VNyanAvatarController avatar;
 
-    public AudioPlayerService(VnyanAvatarController avatar) {
+    public AudioPlayerService(VNyanAvatarController avatar) {
         this.avatar = avatar;
     }
 

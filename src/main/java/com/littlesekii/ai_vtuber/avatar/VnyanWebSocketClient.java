@@ -5,16 +5,18 @@ import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.util.concurrent.CompletionStage;
 
-public class VnyanWebSocketClient implements WebSocket.Listener {
+import com.littlesekii.ai_vtuber.config.AppConfig;
+
+public class VNyanWebSocketClient implements WebSocket.Listener {
 
     private final WebSocket webSocket;
 
-    public VnyanWebSocketClient(String url) {
+    public VNyanWebSocketClient() {
         HttpClient client = HttpClient.newHttpClient();
 
         this.webSocket = client.newWebSocketBuilder()
             .buildAsync(
-                URI.create(url),
+                URI.create(AppConfig.VNYAN_WEB_SOCKET),
                 this
             )
             .join();

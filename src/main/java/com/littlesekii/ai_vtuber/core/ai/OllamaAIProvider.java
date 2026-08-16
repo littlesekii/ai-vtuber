@@ -8,6 +8,7 @@ import java.net.http.HttpResponse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.littlesekii.ai_vtuber.config.AppConfig;
 
 public class OllamaAIProvider implements AIProvider {
@@ -21,18 +22,37 @@ public class OllamaAIProvider implements AIProvider {
     }
 
     @Override
-    public String generateResponse(String context, String username, String message) {
-        String prompt =
-            context + "\n\n" + 
-            "Nome: " + username + 
-            "\nMensagem : " + message;
+    public String generateMessageResponse(String context, String username, String message) {
+        String prompt = context + " Nome: " + username + " | Mensagem: " + message;
+        // System.out.println(prompt);
+        return generateResponse(prompt);      
+    }
 
-        String json =
-                "{"
-                + "\"model\":\"" + AppConfig.AI_MODEL + "\","
-                + "\"prompt\":\"" + escapeJson(prompt) + "\","
-                + "\"stream\":false"
-                + "}";
+    @Override
+    public String generateEventResponse(String context, String username, String event) {
+        String prompt = context + " Nome: " + username + " | Evento: " + event;
+        // System.out.println(prompt);
+        return generateResponse(prompt);      
+    }
+
+    private String generateResponse(String prompt) {
+
+        ObjectNode body = objectMapper.createObjectNode();
+
+        body.put("model", AppConfig.AI_MODEL);
+        body.put("prompt", prompt);
+        body.put("stream", false);
+        body.put("think", false);
+        // body.put("keep_alive", "30m");
+
+        ObjectNode options = body.putObject("options");
+
+        // // options.put("temperature", 0.9);
+        // // options.put("top_p", 0.9);
+        options.put("repeat_penalty", 1.1);
+        // // options.put("num_predict", 150);
+
+        String json = body.toString();
 
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(AppConfig.OLLAMA_URL + "/api/generate"))
@@ -68,13 +88,5 @@ public class OllamaAIProvider implements AIProvider {
                 e
             );
         }
-    }
-
-    private String escapeJson(String text) {
-        return text.replace("\\", "\\\\")
-            .replace("\"", "\\\"")
-            .replace("\n", "\\n")
-            .replace("\r", "\\r");
-    }
-    
+    }   
 }
