@@ -16,7 +16,7 @@ public class AIService {
         this.personalityService = personalityService;
     }
 
-    public AIResponse process(InteractionEvent interaction) {
+    public String process(InteractionEvent interaction) {
         System.out.println("[AI] Generating response...");
         String response = "";
 
@@ -34,12 +34,6 @@ public class AIService {
             );
         }
         System.out.println("[AI] Generated response: " + response);
-
-        AIResponse aiResponse = new AIResponse(
-            interaction.username(),
-            response
-        );
-
-        return aiResponse;
+        return response;
     }
 }

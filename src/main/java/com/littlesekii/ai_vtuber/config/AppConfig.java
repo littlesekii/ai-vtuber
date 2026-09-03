@@ -10,6 +10,7 @@ public final class AppConfig {
     public static final String TTS_URL = "http://127.0.0.1:8003";
 
     public static final String VNYAN_WEB_SOCKET = "ws://127.0.0.1:8067/vnyan";
-
+    public static final String OVERLAY_WEB_SOCKET = "ws://127.0.0.1:8096/ws";
+    
     public static final int MAX_RESPONSE_LENGTH = 200; 
 }

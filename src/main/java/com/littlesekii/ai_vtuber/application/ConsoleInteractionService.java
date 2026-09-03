@@ -30,7 +30,11 @@ public class ConsoleInteractionService implements InteractionService {
         if (separator == -1) {
             return new InteractionEvent(
                 "Viewer",
-                input
+                input,
+                "https://static.vecteezy.com/system/resources/thumbnails/048/496/223/small_2x/an-image-of-girl-listening-to-music-photo.jpeg",
+                InteractionType.MESSAGE,
+                0,
+                0
             );
         }
 
@@ -46,7 +50,10 @@ public class ConsoleInteractionService implements InteractionService {
             return new InteractionEvent(
                 username,
                 message,
-                InteractionType.GIFT
+                "https://static.vecteezy.com/system/resources/thumbnails/048/496/223/small_2x/an-image-of-girl-listening-to-music-photo.jpeg",
+                InteractionType.GIFT,
+                5,
+                500
             );
         }
 
@@ -54,13 +61,20 @@ public class ConsoleInteractionService implements InteractionService {
             return new InteractionEvent(
                 username,
                 message,
-                InteractionType.FOLLOW
+                "https://static.vecteezy.com/system/resources/thumbnails/048/496/223/small_2x/an-image-of-girl-listening-to-music-photo.jpeg",
+                InteractionType.FOLLOW,
+                0,
+                1000
             );
         }
 
         return new InteractionEvent(
             username,
-            message
+            message,
+            "https://static.vecteezy.com/system/resources/thumbnails/048/496/223/small_2x/an-image-of-girl-listening-to-music-photo.jpeg",
+            InteractionType.MESSAGE,
+            0,
+            0
         );
     }
 }

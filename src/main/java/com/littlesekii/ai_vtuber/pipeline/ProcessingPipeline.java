@@ -3,23 +3,28 @@ package com.littlesekii.ai_vtuber.pipeline;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.Semaphore;
 
-import com.littlesekii.ai_vtuber.core.ai.AIResponse;
-import com.littlesekii.ai_vtuber.core.interaction.InteractionEvent;
-import com.littlesekii.ai_vtuber.tts.GeneratedAudio;
+import com.littlesekii.ai_vtuber.core.interaction.InteractionData;
 
 public class ProcessingPipeline {
-    private final BlockingQueue<InteractionEvent> interactionQueue = new PriorityBlockingQueue<>();
-    private final BlockingQueue<AIResponse> responseQueue = new LinkedBlockingQueue<>();
-    private final BlockingQueue<GeneratedAudio> audioQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<InteractionData> aiProcessingQueue = new PriorityBlockingQueue<>();
+    private final BlockingQueue<InteractionData> ttsQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<InteractionData> outputQueue = new LinkedBlockingQueue<>();
 
-    public BlockingQueue<InteractionEvent> getInteractionQueue() {
-        return interactionQueue;
+    private final Semaphore interactionSlots = new Semaphore(5);
+
+    public BlockingQueue<InteractionData> getAIProcessingQueue() {
+        return aiProcessingQueue;
     }
-    public BlockingQueue<AIResponse> getResponseQueue() {
-        return responseQueue;
+    public BlockingQueue<InteractionData> getTTSQueue() {
+        return ttsQueue;
     }
-    public BlockingQueue<GeneratedAudio> getAudioQueue() {
-        return audioQueue;
+    public BlockingQueue<InteractionData> getOutputQueue() {
+        return outputQueue;
+    }
+
+    public Semaphore getInteractionSlots() {
+        return interactionSlots;
     }
 }

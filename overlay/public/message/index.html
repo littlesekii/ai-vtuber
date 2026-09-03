@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mío Overlay - Mensagem</title>
+    <link rel="stylesheet" href="/shared/style.css">
+</head>
+<body>
+    <main class="overlay">
+        <section id="message-card" class="message-card">
+            <div class="avatar-ring">
+                <img
+                    id="viewer-avatar"
+                    src="/shared/assets/default-avatar.svg"
+                    alt=""
+                    referrerpolicy="no-referrer"
+                >
+            </div>
+
+            <div class="message-body">
+                <div class="message-header">
+                    <span id="viewer-name" class="viewer-name">Mío Live</span>
+                    <span id="viewer-priority" class="priority-badge" hidden></span>
+                </div>
+
+                <p id="viewer-message" class="viewer-message">
+                    Aguardando mensagem...
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/message/app.js"></script>
+</body>
+</html>

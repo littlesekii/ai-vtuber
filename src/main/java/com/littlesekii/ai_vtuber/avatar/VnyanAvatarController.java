@@ -20,6 +20,10 @@ public class VNyanAvatarController {
         client.send("Gift " + amount);
     }
 
+    public void follow() {
+        client.send("Follow");
+    }
+
     public void close() {
         client.close();
     }    

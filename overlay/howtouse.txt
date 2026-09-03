@@ -1,0 +1,3 @@
+python overlay/server/overlay_server.py
+
+cloudflared tunnel --url localhost:8095

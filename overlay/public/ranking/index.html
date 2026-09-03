@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mío Overlay - Ranking</title>
+    <link rel="stylesheet" href="/shared/style.css">
+</head>
+
+<body>
+    <main class="overlay">
+        <section class="panel ranking-panel rotating-panel">
+
+            <div id="likes-view" class="rotation-view active">
+                <header class="panel-header">
+                    <span class="panel-tag">LIVE</span>
+                    <h2>Ranking de Likes ❤️‍🔥</h2>
+                </header>
+
+                <div id="likes-ranking-list" class="ranking-list">
+                    <div class="empty-state">Aguardando likes...</div>
+                </div>
+            </div>
+
+            <div id="gift-view" class="rotation-view">
+                <header class="panel-header">
+                    <span class="panel-tag">LIVE</span>
+                    <h2>Último Presente 🎁🔥</h2>
+                </header>
+
+                <div class="last-gift-card">
+                    <img
+                        id="gift-user-avatar"
+                        class="last-gift-user-avatar-large"
+                        src="/shared/assets/default-avatar.svg"
+                        alt=""
+                        referrerpolicy="no-referrer"
+                    >
+
+                    <strong id="gift-username" class="last-gift-username">
+                        Viewer
+                    </strong>
+
+                    <div class="last-gift-present">
+                        <img
+                            id="gift-image"
+                            class="last-gift-image-small"
+                            src="/shared/assets/default-avatar.svg"
+                            alt=""
+                            referrerpolicy="no-referrer"
+                        >
+
+                        <span id="gift-description" class="last-gift-description">
+                            enviou um presente
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="gift-ranking-view" class="rotation-view">
+                <header class="panel-header">
+                    <span class="panel-tag">LIVE</span>
+                    <h2>Ranking de Presentes 🎁</h2>
+                </header>
+
+                <div id="gift-ranking-list" class="ranking-list">
+                    <div class="empty-state">Aguardando presentes...</div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="/ranking/ranking.js"></script>
+</body>
+</html>

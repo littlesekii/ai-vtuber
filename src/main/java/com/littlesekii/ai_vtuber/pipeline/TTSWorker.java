@@ -1,20 +1,20 @@
 package com.littlesekii.ai_vtuber.pipeline;
 
+import java.nio.file.Path;
 import java.util.concurrent.BlockingQueue;
 
-import com.littlesekii.ai_vtuber.core.ai.AIResponse;
-import com.littlesekii.ai_vtuber.tts.GeneratedAudio;
+import com.littlesekii.ai_vtuber.core.interaction.InteractionData;
 import com.littlesekii.ai_vtuber.tts.TTSService;
 
 public class TTSWorker implements Runnable {
 
-    private final BlockingQueue<AIResponse> input;
-    private final BlockingQueue<GeneratedAudio> output;
+    private final BlockingQueue<InteractionData> input;
+    private final BlockingQueue<InteractionData> output;
     private final TTSService ttsService;
 
     public TTSWorker(
-        BlockingQueue<AIResponse> input,
-        BlockingQueue<GeneratedAudio> output,
+        BlockingQueue<InteractionData> input,
+        BlockingQueue<InteractionData> output,
         TTSService ttsService
     ) {
         this.input = input;
@@ -26,9 +26,12 @@ public class TTSWorker implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                AIResponse response = input.take();
-                GeneratedAudio audio = ttsService.process(response);
-                output.offer(audio);
+                InteractionData interactionData = input.take();
+
+                Path audio = ttsService.process(interactionData.getAIResponse());
+                interactionData.setTTSAudio(audio);
+                
+                output.offer(interactionData);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

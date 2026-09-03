@@ -1,24 +1,27 @@
 package com.littlesekii.ai_vtuber.pipeline;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 
+import com.littlesekii.ai_vtuber.core.interaction.InteractionData;
 import com.littlesekii.ai_vtuber.core.interaction.InteractionEvent;
 import com.littlesekii.ai_vtuber.core.interaction.InteractionService;
 import com.littlesekii.ai_vtuber.core.interaction.InteractionType;
 
 public class InteractionWorker implements Runnable {
-
-    private static final int MAX_NORMAL_INTERACTIONS = 5;
-
-    private final BlockingQueue<InteractionEvent> interactionQueue;
+    
+    private final BlockingQueue<InteractionData> output;
     private final InteractionService interactionService;
+    private final Semaphore interactionSlots;
 
     public InteractionWorker(
-        BlockingQueue<InteractionEvent> interactionQueue,
-        InteractionService interactionService
+        BlockingQueue<InteractionData> output,
+        InteractionService interactionService,
+        Semaphore interactionSlots
     ) {
-        this.interactionQueue = interactionQueue;
+        this.output = output;
         this.interactionService = interactionService;
+        this.interactionSlots = interactionSlots;
     } 
 
     @Override
@@ -27,21 +30,30 @@ public class InteractionWorker implements Runnable {
             try {
                 InteractionEvent interaction = interactionService.listen();
 
+                InteractionData interactionData = new InteractionData();
+                interactionData.setInteractionEvent(interaction);
+
                 if (
                     interaction.type() == InteractionType.FOLLOW ||
                     interaction.type() == InteractionType.GIFT
                 ) {
-                    interactionQueue.put(interaction);
-                } else {
-                    if (interactionQueue.size() >= MAX_NORMAL_INTERACTIONS) {
-                        System.out.println(
-                            "[INTERACTION WORKER] Queue busy. Discarding: " + 
-                            interaction.username()
-                        );
-                        continue;
-                    }
-                    interactionQueue.offer(interaction);
+                    output.offer(interactionData);
+                    continue;
                 }
+
+                if (!interactionSlots.tryAcquire()) {
+                    System.out.println(
+                        "[INTERACTION WORKER] Pipeline busy. Discarding: " +
+                        interaction.username() +
+                        ": " +
+                        interaction.body()
+                    );
+                    continue;
+                }
+
+                interactionData.setInteractionSlot(true);
+
+                output.offer(interactionData);
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

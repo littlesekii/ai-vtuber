@@ -5,6 +5,7 @@ public record InteractionEvent (
     String body,
     String profileUrl,
     InteractionType type,
+    int amount,
     int priority,
     long createdAt
 ) implements Comparable<InteractionEvent> {
@@ -14,6 +15,7 @@ public record InteractionEvent (
         String body,
         String profileUrl,
         InteractionType interactionType,
+        int amount,
         int priority
     ) {
         this(
@@ -21,6 +23,7 @@ public record InteractionEvent (
             body,
             profileUrl,
             interactionType,
+            amount,
             priority, 
             System.currentTimeMillis()
         );
@@ -37,22 +40,8 @@ public record InteractionEvent (
             body,
             profileUrl,
             InteractionType.MESSAGE,
+            0,
             priority, 
-            System.currentTimeMillis()
-        );
-    }
-
-    public InteractionEvent(
-        String username,
-        String body,
-        InteractionType interactionType
-    ) {
-        this(
-            username, 
-            body,
-            "",
-            interactionType,
-            0, 
             System.currentTimeMillis()
         );
     }
@@ -66,6 +55,7 @@ public record InteractionEvent (
             body,
             "",
             InteractionType.MESSAGE,
+            0,
             0, 
             System.currentTimeMillis()
         );

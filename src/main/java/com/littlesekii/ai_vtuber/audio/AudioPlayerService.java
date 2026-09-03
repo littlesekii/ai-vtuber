@@ -10,7 +10,6 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineEvent;
 
 import com.littlesekii.ai_vtuber.avatar.VNyanAvatarController;
-import com.littlesekii.ai_vtuber.tts.GeneratedAudio;
 
 public class AudioPlayerService {
 
@@ -20,9 +19,9 @@ public class AudioPlayerService {
         this.avatar = avatar;
     }
 
-    public void process(GeneratedAudio audio) {
+    public void process(Path audio) {
         try {
-            Path file = audio.file().toAbsolutePath();
+            Path file = audio.toAbsolutePath();
 
             if (!Files.exists(file)) {
                 throw new RuntimeException(
@@ -79,6 +78,8 @@ public class AudioPlayerService {
 
             clip.close();
             audioInput.close();
+            
+            Files.delete(file);
 
             System.out.println("[AUDIO] Finished.");
 
