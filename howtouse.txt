@@ -1,0 +1,5 @@
+powershell -ExecutionPolicy Bypass -File .\run.ps1
+
+e:
+cd SEKI/Projects/VTuberAI/ai-vtuber
+java -jar target\ai-vtuber-1.0-SNAPSHOT.jar
