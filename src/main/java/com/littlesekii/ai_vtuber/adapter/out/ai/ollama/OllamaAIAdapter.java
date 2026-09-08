@@ -69,10 +69,10 @@ public class OllamaAIAdapter implements AIProviderPort {
 
         ObjectNode options = body.putObject("options");
 
-        // // options.put("temperature", 0.9);
-        // // options.put("top_p", 0.9);
         options.put("repeat_penalty", repeatPenalty);
-        // // options.put("num_predict", 150);
+        // options.put("temperature", 0.9);
+        // options.put("top_p", 0.9);
+        // options.put("num_predict", 150);
 
         String json = body.toString();
 

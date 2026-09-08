@@ -34,8 +34,9 @@ public class OutputWorker implements Runnable {
                     outputService.process(interactionData);
                     long sleepTime = (long) (ThreadLocalRandom.current().nextDouble() * 1000);
                     Thread.sleep(sleepTime);
-                    System.out.println(sleepTime);
 
+                } catch (Exception e) {
+                    System.err.println("[OUTPUT WORKER] Error processing output: " + e.getMessage());
                 } finally {
                     if (interactionData.getInteractionSlot()) {
                         interactionSlots.release();

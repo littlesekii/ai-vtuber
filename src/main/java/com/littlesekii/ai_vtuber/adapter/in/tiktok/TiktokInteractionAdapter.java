@@ -5,18 +5,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
-import com.littlesekii.ai_vtuber.application.config.TiktokConfig;
 import com.littlesekii.ai_vtuber.application.port.in.InteractionProviderPort;
 import com.littlesekii.ai_vtuber.application.port.out.OverlayProviderPort;
 import com.littlesekii.ai_vtuber.domain.interaction.InteractionEvent;
 import com.littlesekii.ai_vtuber.domain.interaction.InteractionType;
 import com.littlesekii.ai_vtuber.domain.priority.PriorityService;
+import com.littlesekii.ai_vtuber.infra.config.TiktokConfig;
 
 import io.github.jwdeveloper.tiktok.TikTokLive;
 import io.github.jwdeveloper.tiktok.data.models.gifts.GiftComboStateType;
+import io.github.jwdeveloper.tiktok.live.LiveClient;
+import io.github.jwdeveloper.tiktok.websocket.LiveClientStopType;
 
 public class TiktokInteractionAdapter implements InteractionProviderPort {
 
@@ -31,8 +40,14 @@ public class TiktokInteractionAdapter implements InteractionProviderPort {
     private final Map<String, Map<String, Object>> likeRanking;
     private final Map<String, Map<String, Object>> giftRanking;
 
-
-
+    private final AtomicBoolean reconnectScheduled = new AtomicBoolean(false);
+    private final ScheduledExecutorService reconnectScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "tiktok-reconnect");
+        t.setDaemon(true);
+        return t;
+    });
+    private final AtomicBoolean running = new AtomicBoolean(true);
+    private final AtomicReference<LiveClient> liveClientRef = new AtomicReference<>(null);
 
     public TiktokInteractionAdapter(
         TiktokConfig config,
@@ -44,19 +59,28 @@ public class TiktokInteractionAdapter implements InteractionProviderPort {
         this.overlayProviderPort = overlayProviderPort;
 
         this.incomingInteractions = new LinkedBlockingQueue<>();
-        this.userLastMessage = new HashMap<>();
-        this.restrictedUsers = new HashMap<>();
-        this.likeRanking = new HashMap<>();
-        this.giftRanking = new HashMap<>();
+        this.userLastMessage = new ConcurrentHashMap<>();
+        this.restrictedUsers = new ConcurrentHashMap<>();
+        this.likeRanking = new ConcurrentHashMap<>();
+        this.giftRanking = new ConcurrentHashMap<>();
 
         connect();
     }
 
     public void connect() {
+        if (!running.get()) {
+            return;
+        }
+    
         System.out.println("[TIKTOK] Connecting to @" + config.streamerUsername());
-        TikTokLive.newClient(config.streamerUsername())
+        try {
+            CompletableFuture<LiveClient> future = TikTokLive.newClient(config.streamerUsername())
+            .configure(settings -> {
+                settings.setRetryOnConnectionFailure(false);
+            })
             .onConnected((liveClient, event) -> {
                 System.out.println("[TIKTOK] Connected!");
+                liveClientRef.set(liveClient);
             })
             .onJoin((liveClient, event) -> {
                 if (ThreadLocalRandom.current().nextDouble() < config.greetingChance()) {
@@ -237,12 +261,59 @@ public class TiktokInteractionAdapter implements InteractionProviderPort {
 
                 overlayProviderPort.updateLikeRanking(top5);
             })    
+            .onDisconnected((liveClient, event) -> {
+                System.out.println("[TIKTOK] Disconnected. Reconnecting in " + config.reconnectDelaySeconds() + "s...");
+                liveClientRef.set(null);
+                scheduleReconnect();
+            })
             .onError((liveClient, event) -> {
                 System.err.println(
                     "[TIKTOK] Error: " + event.getException().getMessage()
                 );
             })
-            .buildAndConnect();
+            .buildAndConnectAsync();
+
+            future.whenComplete((client, ex) -> {
+                if (ex != null) {
+                    liveClientRef.set(null);
+                    scheduleReconnect();
+                } else {
+                    liveClientRef.set(client);
+                }
+            });
+
+        } catch (Exception e) {
+            System.err.println("[TIKTOK] Could not build client: " + e.getMessage());
+            scheduleReconnect();
+        }
+    }
+
+    private void scheduleReconnect() {
+        if (!running.get()) {
+            return;
+        }
+        if (!reconnectScheduled.compareAndSet(false, true)) {
+            return;
+        }
+        reconnectScheduler.schedule(
+            () -> {
+                reconnectScheduled.set(false);
+                connect();
+            },
+            config.reconnectDelaySeconds(),
+            TimeUnit.SECONDS
+        );
+    }
+
+    public void stop() {
+        running.set(false);
+        LiveClient client = liveClientRef.get();
+        if (client != null) {
+            try {
+                client.disconnect(LiveClientStopType.DISCONNECT);
+            } catch (Exception ignored) {}
+        }
+        reconnectScheduler.shutdownNow();
     }
 
     @Override

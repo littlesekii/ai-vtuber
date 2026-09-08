@@ -1,4 +1,4 @@
-package com.littlesekii.ai_vtuber.application.config;
+package com.littlesekii.ai_vtuber.infra.config;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,7 +94,7 @@ public class AppConfig {
         props.setProperty("app.personality.file", 
             "personality/mio.txt");
 
-        // === TikTok ===
+        // === TikTok ===        
         props.setProperty("app.tiktok.streamer-username", 
             "ayamelives");
         props.setProperty("app.tiktok.greeting-chance", 
@@ -119,6 +119,8 @@ public class AppConfig {
             "5");
         props.setProperty("app.tiktok.like-ranking-top-n", 
             "5");
+        props.setProperty("app.tiktok.reconnect-delay-seconds", 
+            "10");
 
         // === AI / Ollama ===
         props.setProperty("app.ollama.url", 

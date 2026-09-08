@@ -1,4 +1,4 @@
-package com.littlesekii.ai_vtuber.application.config;
+package com.littlesekii.ai_vtuber.infra.config;
 
 public record TiktokConfig(
     String streamerUsername,
@@ -12,7 +12,8 @@ public record TiktokConfig(
     double likePriorityMultiplier,
     int likePriorityDurationMinutes,
     int giftRankingTopN,
-    int likeRankingTopN
+    int likeRankingTopN,
+    int reconnectDelaySeconds
 ) {
     public static TiktokConfig from(AppConfig config) {
         return new TiktokConfig(
@@ -27,7 +28,8 @@ public record TiktokConfig(
             config.getDouble    ("app.tiktok.like-priority-multiplier", 0.5),
             config.getInt       ("app.tiktok.like-priority-duration-minutes", 1),
             config.getInt       ("app.tiktok.gift-ranking-top-n", 5),
-            config.getInt       ("app.tiktok.like-ranking-top-n", 5)
+            config.getInt       ("app.tiktok.like-ranking-top-n", 5),
+            config.getInt       ("app.tiktok.reconnect-delay-seconds", 10)
         );
     }
 }

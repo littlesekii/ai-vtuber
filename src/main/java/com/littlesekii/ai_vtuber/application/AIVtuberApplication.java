@@ -14,8 +14,6 @@ import com.littlesekii.ai_vtuber.adapter.out.personality.FilePersonalityAdapter;
 import com.littlesekii.ai_vtuber.adapter.out.tts.HttpTTSAdapter;
 import com.littlesekii.ai_vtuber.adapter.out.vnyan.VNyanAvatarAdapter;
 import com.littlesekii.ai_vtuber.adapter.out.vnyan.VNyanWebSocketClient;
-import com.littlesekii.ai_vtuber.application.config.AppConfig;
-import com.littlesekii.ai_vtuber.application.config.TiktokConfig;
 import com.littlesekii.ai_vtuber.application.pipeline.AIWorker;
 import com.littlesekii.ai_vtuber.application.pipeline.InteractionWorker;
 import com.littlesekii.ai_vtuber.application.pipeline.OutputWorker;
@@ -32,6 +30,8 @@ import com.littlesekii.ai_vtuber.application.service.OutputService;
 import com.littlesekii.ai_vtuber.application.service.TTSService;
 import com.littlesekii.ai_vtuber.domain.priority.PriorityService;
 import com.littlesekii.ai_vtuber.domain.voice.VoiceEmotion;
+import com.littlesekii.ai_vtuber.infra.config.AppConfig;
+import com.littlesekii.ai_vtuber.infra.config.TiktokConfig;
 
 public class AIVtuberApplication {
 
@@ -52,7 +52,6 @@ public class AIVtuberApplication {
 
     public AIVtuberApplication() {
         AppConfig config = AppConfig.getInstance();
-
 
         vnyanWSClient = new VNyanWebSocketClient(
             config.getString("app.avatar.vnyan.websocket-url")
@@ -131,12 +130,14 @@ public class AIVtuberApplication {
         executor.submit(new AIWorker(
             pipeline.getAIProcessingQueue(), 
             pipeline.getTTSQueue(), 
-            aiService
+            aiService,
+            pipeline.getInteractionSlots()
         ));
         executor.submit(new TTSWorker(
             pipeline.getTTSQueue(), 
             pipeline.getOutputQueue(), 
-            ttsService
+            ttsService,
+            pipeline.getInteractionSlots()
         ));
         executor.submit(new OutputWorker(
             pipeline.getOutputQueue(),
