@@ -82,14 +82,14 @@ function updateLikesRanking(viewers) {
 
     viewers
         .slice()
-        .sort((a, b) => Number(b.likes || 0) - Number(a.likes || 0))
+        .sort((a, b) => Number(b.amount || 0) - Number(a.amount || 0))
         .slice(0, 5)
         .forEach((viewer, index) => {
             likesRankingList.appendChild(
                 createRankingRow(
                     viewer,
                     index,
-                    `${formatNumber(viewer.likes)} ❤️‍🔥`
+                    `${formatNumber(viewer.amount)} ❤️‍🔥`
                 )
             );
         });
@@ -111,14 +111,14 @@ function updateGiftRanking(viewers) {
 
     viewers
         .slice()
-        .sort((a, b) => Number(b.coins || 0) - Number(a.coins || 0))
+        .sort((a, b) => Number(b.amount || 0) - Number(a.amount || 0))
         .slice(0, 5)
         .forEach((viewer, index) => {
             giftRankingList.appendChild(
                 createRankingRow(
                     viewer,
                     index,
-                    `${formatNumber(viewer.coins)} 🪙`
+                    `${formatNumber(viewer.amount)} 🪙`
                 )
             );
         });

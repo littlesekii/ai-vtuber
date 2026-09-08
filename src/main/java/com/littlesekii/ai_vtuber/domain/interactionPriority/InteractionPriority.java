@@ -1,6 +1,6 @@
-package com.littlesekii.ai_vtuber.domain.priority;
+package com.littlesekii.ai_vtuber.domain.interactionPriority;
 
-public record Priority (
+public record InteractionPriority (
     int amount,
     long expiresAt
 ) {

@@ -4,8 +4,7 @@ import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.littlesekii.ai_vtuber.adapter.in.console.ConsoleInteractionAdapter;
-import com.littlesekii.ai_vtuber.adapter.in.tiktok.TiktokInteractionAdapter;
+import com.littlesekii.ai_vtuber.adapter.in.InteractionProviderFactory;
 import com.littlesekii.ai_vtuber.adapter.out.ai.ollama.OllamaAIAdapter;
 import com.littlesekii.ai_vtuber.adapter.out.audio.AudioPlayerAdapter;
 import com.littlesekii.ai_vtuber.adapter.out.overlay.OverlayAdapter;
@@ -28,10 +27,8 @@ import com.littlesekii.ai_vtuber.application.service.AIService;
 import com.littlesekii.ai_vtuber.application.service.InteractionService;
 import com.littlesekii.ai_vtuber.application.service.OutputService;
 import com.littlesekii.ai_vtuber.application.service.TTSService;
-import com.littlesekii.ai_vtuber.domain.priority.PriorityService;
 import com.littlesekii.ai_vtuber.domain.voice.VoiceEmotion;
 import com.littlesekii.ai_vtuber.infra.config.AppConfig;
-import com.littlesekii.ai_vtuber.infra.config.TiktokConfig;
 
 public class AIVtuberApplication {
 
@@ -41,7 +38,6 @@ public class AIVtuberApplication {
     private final OverlayWebSocketClient overlayWSClient;
     private final OverlayAdapter overlay;
 
-    private final PriorityService priorityService;
     private final InteractionService interactionService;
     private final AIService aiService;
     private final TTSService ttsService; 
@@ -63,21 +59,8 @@ public class AIVtuberApplication {
         );
         overlay = new OverlayAdapter(overlayWSClient);
 
-        priorityService = new PriorityService();
-
-        String inputType = config.getString("app.input.type", "tiktok");
-        if (inputType.equalsIgnoreCase("console")){
-            InteractionProviderPort interactionProviderPort = new ConsoleInteractionAdapter();
-            interactionService = new InteractionService(interactionProviderPort);
-        } else {
-            TiktokConfig tiktokConfig = TiktokConfig.from(config);
-            InteractionProviderPort interactionProviderPort = new TiktokInteractionAdapter(
-                tiktokConfig,
-                priorityService,
-                overlay
-            );
-            interactionService = new InteractionService(interactionProviderPort);
-        }
+        InteractionProviderPort interactionProviderPort = InteractionProviderFactory.create(config, overlay);
+        interactionService = new InteractionService(interactionProviderPort);
 
         TTSProviderPort ttsProviderPort = new HttpTTSAdapter(config.getString("app.tts.url"));
         ttsService = new TTSService(

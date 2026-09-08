@@ -5,6 +5,7 @@
 - Docker (com suporte a GPU para acelerar a LLM)
 - Python 3.11+
 - Java 17+ e Maven
+- [VNyan](https://assetstore.unity.com/packages/tools/integration/vnyan-vtuber-toolkit-226457) (para o avatar)
 
 ## 1. Instalação da LLM (Llama) via Docker
 
@@ -67,10 +68,54 @@ O projeto usa o [Ollama](https://ollama.com) como servidor de LLM, exposto na po
    curl http://127.0.0.1:8003/health
    ```
 
-## 3. Rodando a aplicação Java
+## 3. Overlay (Chat + Ranking)
 
-Com o Ollama e o Kokoro no ar:
+O overlay fornece um servidor HTTP (porta `8095`) e WebSocket (porta `8096`) para exibir mensagens do chat e ranking de presentes.
 
 ```bash
-mvn spring-boot:run
+python overlay/server/overlay_server.py
+```
+
+- HTTP: `http://127.0.0.1:8095`
+- WebSocket: `ws://127.0.0.1:8096/ws`
+
+Para acessar o overlay remotamente via Cloudflare Tunnel:
+
+```bash
+cloudflared tunnel --url http://localhost:8095
+```
+
+## 4. Rodando a aplicação Java
+
+1. Compile o projeto:
+
+   ```bash
+   mvn clean package -DskipTests
+   ```
+
+2. Execute o JAR:
+
+   ```bash
+   java -jar target/ai-vtuber-1.0-SNAPSHOT.jar
+   ```
+
+## 5. Configuração
+
+Edite `config/ai_vtuber.properties` para configurar:
+
+- `app.tiktok.streamer-username` — usuário do TikTok para conexão
+- `app.ai.model` — modelo do Ollama (padrão: `llama3.1`)
+- `app.tts.url` — URL do servidor TTS (padrão: `http://127.0.0.1:8003`)
+- `app.avatar.vnyan-websocket-url` — WebSocket do VNyan (padrão: `ws://127.0.0.1:1845/ws`)
+
+## 6. Personalidade
+
+Coloque arquivos de personalidade da IA na pasta `personality/`. O arquivo padrão é `personality/mio.txt`.
+
+## Inicialização Rápida (Windows)
+
+O script `run.ps1` inicia todos os serviços automaticamente:
+
+```powershell
+.\run.ps1
 ```

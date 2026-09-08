@@ -1,4 +1,4 @@
-package com.littlesekii.ai_vtuber.domain.priority;
+package com.littlesekii.ai_vtuber.domain.interactionPriority;
 
 import java.time.Duration;
 import java.util.List;
@@ -6,9 +6,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class PriorityService {
+public class InteractionPriorityService {
     
-    private final Map<String, List<Priority>> priorityMap = new ConcurrentHashMap<>();
+    private final Map<String, List<InteractionPriority>> priorityMap;
+
+    public InteractionPriorityService() {
+        priorityMap = new ConcurrentHashMap<>();
+    }
 
     public void addPriority(
         String identifier,
@@ -16,7 +20,7 @@ public class PriorityService {
         Duration duration
     ) {
         long expiresAt = System.currentTimeMillis() + duration.toMillis();
-        Priority newPriority = new Priority(amount, expiresAt);
+        InteractionPriority newPriority = new InteractionPriority(amount, expiresAt);
 
         priorityMap.computeIfAbsent(
             identifier, 
@@ -25,7 +29,7 @@ public class PriorityService {
     }
 
     public int getPriority(String username) {
-        List<Priority> priorities = priorityMap.get(username);
+        List<InteractionPriority> priorities = priorityMap.get(username);
 
         if (priorities == null) {
             return 0;
@@ -34,7 +38,7 @@ public class PriorityService {
         priorities.removeIf(priority -> !priority.isActive());
 
         int amount = priorities.stream()
-            .mapToInt(Priority::amount)
+            .mapToInt(InteractionPriority::amount)
             .sum();
 
         if (priorities.isEmpty()) {

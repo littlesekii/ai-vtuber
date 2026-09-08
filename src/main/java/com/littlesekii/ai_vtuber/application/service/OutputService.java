@@ -9,9 +9,9 @@ import com.littlesekii.ai_vtuber.domain.interaction.InteractionType;
 
 public class OutputService {
     
-    private AvatarProviderPort avatarProviderPort;
-    private OverlayProviderPort overlayProviderPort;
-    private AudioPlayerProviderPort audioProviderPort;
+    private final AvatarProviderPort avatarProviderPort;
+    private final OverlayProviderPort overlayProviderPort;
+    private final AudioPlayerProviderPort audioProviderPort;
 
 
     public OutputService(

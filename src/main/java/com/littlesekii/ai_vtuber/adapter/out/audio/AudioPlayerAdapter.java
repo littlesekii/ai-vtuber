@@ -1,9 +1,11 @@
 package com.littlesekii.ai_vtuber.adapter.out.audio;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 
+import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -29,6 +31,7 @@ public class AudioPlayerAdapter implements AudioPlayerProviderPort {
     }
 
     public void play(Path audio) {
+        AudioInputStream volumeStream = null;
         try {
             Path file = audio.toAbsolutePath();
 
@@ -56,15 +59,32 @@ public class AudioPlayerAdapter implements AudioPlayerProviderPort {
 
             clip.start();
 
+            volumeStream = AudioSystem.getAudioInputStream(file.toFile());
+            AudioFormat format = volumeStream.getFormat();
+            long frameSize = format.getFrameSize();
+            long frameRate = (long) format.getFrameRate();
+
+            long framesRead = 0;
+            byte[] buffer = new byte[1024];
             boolean mouthOpen = false;
 
             while (finished.getCount() > 0) {
-                long position = clip.getMicrosecondPosition();
+                long positionMicros = clip.getMicrosecondPosition();
+                long targetFrames = positionMicros * frameRate / 1_000_000;
+                long deltaFrames = targetFrames - framesRead;
 
-                double volume = getVolumeAt(
-                    file,
-                    position
-                );
+                if (deltaFrames > 0) {
+                    long skipped = volumeStream.skip(deltaFrames * frameSize);
+                    framesRead += skipped / frameSize;
+                }
+
+                int bytesRead = volumeStream.read(buffer);
+
+                if (bytesRead > 0) {
+                    framesRead += bytesRead / frameSize;
+                }
+
+                double volume = computeVolume(buffer, bytesRead);
 
                 boolean shouldOpen = volume > mouthVolumeThreshold;
 
@@ -97,57 +117,35 @@ public class AudioPlayerAdapter implements AudioPlayerProviderPort {
                 "Could not play audio.",
                 e
             );
+        } finally {
+            if (volumeStream != null) {
+                try {
+                    volumeStream.close();
+                } catch (IOException ignored) {}
+            }
         }
     }
 
-    private double getVolumeAt(Path file, long microsecondPosition) {
-        try {
-            AudioInputStream stream = AudioSystem.getAudioInputStream(
-                file.toFile()
-            );
-
-            var format = stream.getFormat();
-
-            long framePosition =
-                microsecondPosition *
-                (long) format.getFrameRate() /
-                1_000_000;
-
-            long bytesToSkip =
-                framePosition *
-                format.getFrameSize();
-
-            stream.skip(bytesToSkip);
-
-            byte[] buffer = new byte[1024];
-
-            int bytesRead = stream.read(buffer);
-
-            stream.close();
-
-            if (bytesRead <= 0) {
-                return 0;
-            }
-
-            double sum = 0;
-
-            for (int i = 0; i < bytesRead - 1; i += 2) {
-                int sample =
-                    (buffer[i] & 0xff) |
-                    (buffer[i + 1] << 8);
-
-                double normalized =
-                    sample / 32768.0;
-
-                sum += normalized * normalized;
-            }
-
-            return Math.sqrt(
-                sum / (bytesRead / 2.0)
-            );
-
-        } catch (Exception e) {
+    private double computeVolume(byte[] buffer, int bytesRead) {
+        if (bytesRead <= 0) {
             return 0;
         }
+
+        double sum = 0;
+
+        for (int i = 0; i < bytesRead - 1; i += 2) {
+            int sample =
+                (buffer[i] & 0xff) |
+                (buffer[i + 1] << 8);
+
+            double normalized =
+                sample / 32768.0;
+
+            sum += normalized * normalized;
+        }
+
+        return Math.sqrt(
+            sum / (bytesRead / 2.0)
+        );
     }
 }
